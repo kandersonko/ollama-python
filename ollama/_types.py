@@ -11,6 +11,7 @@ from pydantic import (
   ConfigDict,
   Field,
   model_serializer,
+field_validator
 )
 from pydantic.json_schema import JsonSchemaValue
 from typing_extensions import Annotated, Literal
@@ -238,6 +239,11 @@ class BaseGenerateResponse(SubscriptableBaseModel):
 
   eval_duration: Optional[int] = None
   'Duration of evaluating inference in nanoseconds.'
+
+  @field_validator('created_at', mode='before')
+  @classmethod
+  def coerce_created_at(cls, v):
+      return str(v) if v is not None else v
 
 
 class GenerateResponse(BaseGenerateResponse):
