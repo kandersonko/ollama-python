@@ -674,7 +674,15 @@ class AsyncClient(BaseClient):
             raise ResponseError(e.response.text, e.response.status_code) from None
 
           async for line in r.aiter_lines():
-            part = json.loads(line)
+            if not line.strip():  # Skip empty lines
+              continue
+            if line.strip() == "data: [DONE]":
+                break  # proper end of stream, exit loop
+            try:
+              part = json.loads(line)
+            except json.JSONDecodeError:
+              print('Skipping invalid JSON line:', repr(line))
+              continue
             if err := part.get('error'):
               raise ResponseError(err)
             yield cls(**part)
